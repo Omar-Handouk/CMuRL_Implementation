@@ -2,12 +2,13 @@ import __future__
 import subprocess
 import os
 import time
+from env.CMuRLEnv import CMuRLEnv
 # command = 'bash ./scripts/test.sh nigga'
 # print(command.split())
 # process = subprocess.Popen(command, shell=True)
 # process.communicate()
 
-
+print('asdasd' + ' alpha' + str(123))
 # def get_last_n_lines(file_name, N):
 #     list_of_lines = []
 #     with open(file_name, 'rb') as read_obj:
@@ -51,3 +52,9 @@ import time
 #         data.append(float(tokenized_data[i])) if i != 8 else data.append(int(tokenized_data[i]))
 #
 #     return data
+
+env = CMuRLEnv()
+
+action = env.action_space.sample()
+
+env.step(action)

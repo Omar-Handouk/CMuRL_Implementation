@@ -1,14 +1,11 @@
 import __future__
 
-import random
-import json
 import gym
 from gym import spaces
 import numpy as np
 import os
-import random
-import numpy
 import subprocess
+import time
 
 # state
 states = [0, 1, 2, 3]  # Loss, Band up, Band down, stable
@@ -54,7 +51,17 @@ def reward_func(state, time_step):
     # Check if we are !time_step % 5, if True then check after loss if band gained
     return state_factor(state) * (base_reward ** (1 / (time_step * scale_factor(state))))
 
-def bandwidth_mean
+
+def bandwidth_mean(data):
+    total = 0
+
+    for entry in data:
+        interval = intervalData(entry)
+        total += interval[1]
+
+    return float(total) / mean_interval
+
+
 # https://thispointer.com/python-get-last-n-lines-of-a-text-file-like-tail-command/
 def get_last_n_lines(file_name, N):
     list_of_lines = []
@@ -121,27 +128,70 @@ class CMuRLEnv(gym.Env):
 
         self.time_step = 0  # Check bandwidth after 5 time_steps
         self. acc_rewards = 0
+        self.band_mean = None
 
     def step(self, action):
+
+        time.sleep(6)
+
         # return observation, reward, done, info
         # If after 5 rounds no increase in bandwidth
+
         observation = []
         reward = None
-        done = None
-        info = None
+        done = False
+        info = {}
+
+        state = -1
 
         self.time_step += 1
 
-        iperf_data = get_last_n_lines('../iperf_results/results.txt', 6)
+        dir = os.path.dirname(__file__)
+        filename = os.path.join(dir, '../iperf_results/results.txt')
+
+        iperf_data = get_last_n_lines(filename, 6)
         del iperf_data[-1]  # Remove
 
+        # Check for any loss in 5 intervals
         for entry in iperf_data:
             data = intervalData(entry)
             observation.append(data)
 
             if data[2] != 0:
-                reward = reward_func(0, self.time_step)
-            elif not(self.time_step % 2)
+                state = 0
+                reward = reward_func(state, self.time_step)
+
+        # Check average bandwidth
+        if not(self.time_step % 5) and state == -1:
+            new_band = bandwidth_mean(iperf_data)
+            if self.band_mean is None:
+                self.band_mean = new_band
+            elif new_band >= self.band_mean and abs(self.band_mean - new_band) >= delta_min:
+                self.band_mean = new_band
+                state = 1
+                reward = reward_func(state, self.time_step)
+            elif new_band < self.band_mean and abs(self.band_mean - new_band) >= delta_max:
+                self.band_mean = new_band
+                state = 2
+                reward = reward_func(state, self.time_step)
+
+        if state == -1:
+            state = 3
+            reward = reward_func(state, self.time_step)
+
+        observation = np.array(observation)
+
+        base_command = '/bin/bash ' + os.path.join(dir, '../scripts/manage_cc.sh ')
+
+        alpha = base_command + 'alpha ' + str(MAX_ALPHA * action['ALPHA'])
+        beta = base_command + 'beta ' + str(MAX_BETA * action['BETA'])
+        tcp_friend = base_command + 'tcp_friendliness ' + str(action['TCP_FRIENDLINESS'])
+        fast_conv = base_command + 'fast_convergence ' + str(action['FAST_CONVERGENCE'])
+
+        command_list = [alpha, beta, tcp_friend, fast_conv]
+
+        for cc in command_list:
+            (subprocess.Popen(cc, shell=True)).communicate()
 
         return observation, reward, done, info
 
