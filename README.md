@@ -63,7 +63,7 @@ $ conda create --name CMuRL python=3.7
 ```
 - Installing requirements
 ```shell script
-$ pip install -r requirment.txt
+$ pip install -r requirments.txt
 ```
 ___
 ### Running the experiment
