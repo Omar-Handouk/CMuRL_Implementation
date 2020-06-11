@@ -51,7 +51,7 @@ class CMuRLEnv(gym.Env):
         self.fast_convergence = FAST_CONVERGENCE
 
         # Call TCPTuner initial values
-        #self.call_tcptuner()
+        self.call_tcptuner()
 
         # Initialize observation space and action space
         # Observation spaces: 5 logs from iperf3.
@@ -116,7 +116,7 @@ class CMuRLEnv(gym.Env):
         self.fast_convergence = action[3]
 
         # Call TCPTuner with new updated parameters
-        #self.call_tcptuner()
+        self.call_tcptuner()
 
         return np.array(observation), reward, done, info
 
