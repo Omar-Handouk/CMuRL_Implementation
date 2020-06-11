@@ -13,7 +13,7 @@ states = [0, 1, 2, 3]
 MEAN_INTERVAL = 5  # Interval for averaging bandwidth
 DELTA_MAX = 0.5  # Maximum bandwidth lost
 DELTA_MIN = 0.5  # Minimum bandwidth gained
-LAMBDA = 0.01  # Base reward
+LAMBDA = 0.1  # Base reward
 
 # Base-values
 # Alpha: Multiplicative increase factor to increase CWNDmax, CWNDmax = CWNDmax * alpha
@@ -90,7 +90,7 @@ class CMuRLEnv(gym.Env):
         if not (self.time_step % MEAN_INTERVAL) and state == -1:  # If 5 transmissions passed and no state is set
             # Check if we have no average bandwidth set
             calculated_avg = average_bandwidth(observation)
-            abs_diff = abs(self.average_bandwidth - calculated_avg)
+            abs_diff = abs(self.average_bandwidth - calculated_avg) if self.average_bandwidth is not None else None
 
             if self.average_bandwidth is None:
                 pass
@@ -141,6 +141,8 @@ class CMuRLEnv(gym.Env):
 
         # Call TCPTuner initial values
         self.call_tcptuner()
+
+        return np.array(get_observation(self.dir, self.net_logs, 5))
 
 
 # --------------------------------------------------------------------------------------------------------------------
