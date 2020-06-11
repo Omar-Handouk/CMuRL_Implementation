@@ -314,4 +314,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+backup/
 # End of https://www.gitignore.io/api/git,python,pycharm,pycharm+iml,pycharm+all
