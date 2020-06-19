@@ -1,8 +1,11 @@
+#!/usr/bin/env python
 import __future__
 
+import os
 import sys
 import time
 import random
+import signal
 from subprocess import call
 
 # Modes: 0 - No traffic rule set, 1 - Packet limit set to 1000 outstanding packet, 2 - Delay + Loss
@@ -11,13 +14,23 @@ from subprocess import call
 # This script is intended to use Linux tc and netem modules to simulate different conditions
 #  that lead to network congestion
 
-if len(sys.argv) <= 1:
-    print('Network interface need to be defined')
-    print('Available interfaces:')
-    call('ifconfig', shell=True)
-    sys.exit(1)
+network_interface = None
 
-network_interface = sys.argv[1]
+if len(sys.argv) <= 1:
+    file_path = os.path.dirname(__file__)
+    file_name = os.path.join(file_path, './interface.txt')
+    file = open(file_name, 'r')
+
+    default_interface = file.read()
+
+    print('No network interface selected, selecting interface from interface.txt:', default_interface)
+    time.sleep(5)
+    network_interface = default_interface
+
+    file.close()
+else:
+    network_interface = sys.argv[1]
+
 authorization = "echo 'CMurl@dmin213!' | sudo -S "
 add_rule = authorization + 'tc qdisc add dev ' + network_interface + ' root netem'
 delete_rule = authorization + 'tc qdisc delete dev ' + network_interface + ' root'
@@ -61,19 +74,43 @@ def construct_rules(n_rules):
     return t_rules
 
 
-while True:
-    interval = random.randint(0, len(intervals) - 1)
+def gen_scenario():
     number_of_rules = random.randint(0, 5)
+    scenario = None
 
-    if number_of_rules == 0:
-        pass
-    else:
-        traffic_rules = construct_rules(number_of_rules)
-        net_rule = add_rule + ' ' + traffic_rules
-        call(net_rule, shell=True)
-
-    time.sleep(intervals[interval])
-
-    # Clear traffic rules
     if number_of_rules != 0:
-        call(delete_rule, shell=True)
+        traffic_rules = construct_rules(number_of_rules)
+        scenario = add_rule + ' ' + traffic_rules
+
+    return scenario
+
+
+def signal_handler(sig, frame):
+    print('<<<<<<Training interrupted, reverting network interface to normal>>>>>>')
+    call(delete_rule, shell=True)
+    sys.exit(0)
+
+
+def main():
+    while True:
+        interval = random.randint(0, len(intervals) - 1)
+        generated_scenario = gen_scenario()
+
+        if generated_scenario is None:
+            pass
+        else:
+            call(generated_scenario, shell=True)
+            print('Current rule:', generated_scenario)
+
+        time.sleep(interval)
+
+        if generated_scenario is not None:
+            call(delete_rule, shell=True)
+
+
+if __name__ == "__main__":
+    print('---------------Loading random training scenarios---------------')
+    call(delete_rule, shell=True)
+    signal.signal(signal.SIGINT, signal_handler)
+    main()
+    print('---------------Random training scenarios complete---------------')

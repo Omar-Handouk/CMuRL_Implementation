@@ -1,0 +1,12 @@
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem corrupt 15.2% loss 32.5% delay 65ms 11ms duplicate 10.7%
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem duplicate 12.1% delay 138ms 13ms corrupt 33.6% limit 1961
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem delay 97ms 13ms corrupt 22.9% limit 1321 duplicate 11.9% loss 15%
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem loss 25% corrupt 28.9% duplicate 32.2% delay 107ms 12ms limit 4236
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem delay 89ms 15ms
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem delay 97ms 13ms limit 2555 duplicate 12%
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem corrupt 11% delay 57ms 10ms limit 2677 loss 22.4%
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem corrupt 12.9% limit 3451 loss 29.8% duplicate 29.3%
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem delay 72ms 13ms limit 3094 corrupt 15.2% duplicate 13.4% loss 10.8%
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem delay 93ms 10ms
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem loss 24.9% duplicate 17.2% delay 124ms 12ms
+echo 'CMurl@dmin213!' | sudo -S tc qdisc add dev enp0s3 root netem delay 119ms 13ms corrupt 28.4% duplicate 23.6% loss 19.7%
