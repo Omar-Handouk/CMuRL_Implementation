@@ -10,6 +10,6 @@ env = DummyVecEnv([lambda: CMuRLEnv()])
 env = VecCheckNan(env, raise_exception=True)
 
 model = PPO1(MlpPolicy, env, verbose=1)
-model.learn(total_timesteps=25000)
+model.learn(total_timesteps=100000)
 
 model.save('CMuRL_Model')
