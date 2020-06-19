@@ -9,7 +9,10 @@ from env.CMuRLEnv import CMuRLEnv
 env = DummyVecEnv([lambda: CMuRLEnv()])
 env = VecCheckNan(env, raise_exception=True)
 
-model = PPO1(MlpPolicy, env, verbose=1)
-model.learn(total_timesteps=25000)
+model = PPO1.load('CMuRL_Model')
 
-model.save('CMuRL_Model')
+obs = env.reset()
+while True:
+    action, _states = model.predict(obs)
+    obs, rewards, _, _ = env.step(action)
+    env.render()

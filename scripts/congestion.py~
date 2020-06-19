@@ -1,0 +1,23 @@
+import __future__
+
+import time
+import os
+import random
+import subprocess
+
+# Modes: 0 - No traffic rule set, 1 - Packet limit set to 1000 outstanding packet, 2 - Delay + Loss
+# 3 - CORRUPTION + DUPLICATION
+
+# This script is intended to use Linux tc and netem modules to simulate different conditions
+#  that lead to network congestion
+
+authorization = "echo 'CMurl@dmin213!' | sudo -S "
+add_rule = authorization + 'tc qdisc add dev enp0s8 root netem'
+delete_rule = authorization + 'tc qdisc delete dev enp0s8 root'
+
+intervals = [5, 10, 40, 60, 120]
+commands = ['limit 1000', 'delay 25.0% ']
+
+while True:
+    mode = random.randint(0, 3)
+    interval = random.randint(0, 4)
