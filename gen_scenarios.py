@@ -1,6 +1,8 @@
+#!/usr/bin/env python
 import __future__
 
 import os
+import sys
 from scripts.random_train import gen_scenario
 
 file_path = os.path.dirname(__file__)
@@ -10,8 +12,9 @@ file = open(file_name, 'w')
 
 print('---------------Generating network scenarios---------------')
 
+i = 12 if len(sys.argv) <= 1 else int(sys.argv[2])
 n = 0
-while n < 12:
+while n < i:
     scenario = gen_scenario()
     if scenario is None:
         continue
