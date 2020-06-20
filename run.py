@@ -9,7 +9,7 @@ from env.CMuRLEnv import CMuRLEnv
 env = DummyVecEnv([lambda: CMuRLEnv()])
 env = VecCheckNan(env, raise_exception=True)
 
-model = PPO1.load('CMuRL_Model')
+model = PPO1.load('CMuRL_Model_v3')
 
 obs = env.reset()
 while True:

@@ -12,4 +12,4 @@ env = VecCheckNan(env, raise_exception=True)
 model = PPO1(MlpPolicy, env, verbose=1)
 model.learn(total_timesteps=100000)
 
-model.save('CMuRL_Model')
+model.save('CMuRL_Model_v3')
