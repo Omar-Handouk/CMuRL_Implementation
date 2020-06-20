@@ -1,8 +1,7 @@
-import __future__
-
 import os
-import gym
 import subprocess
+
+import gym
 import numpy as np
 from gym import spaces
 
@@ -64,7 +63,7 @@ class CMuRLEnv(gym.Env):
         self.action_space = spaces.Box(low=np.array([0, 0, 0, 0]), high=np.array([1, 1, 1, 1]), dtype=np.float64)
 
     def call_tcptuner(self):
-        base_command = "echo 'CMurl@dmin213!' | sudo -S /bin/bash " +\
+        base_command = "echo 'CMurl@dmin213!' | sudo -S /bin/bash " + \
                        str(os.path.join(self.dir, '../../../scripts/manage_cc.sh '))
 
         alpha = base_command + 'alpha ' + str(max(min(int(round(MAX_ALPHA * self.perc_alpha)), MAX_ALPHA), MIN_ALPHA))
@@ -74,8 +73,8 @@ class CMuRLEnv(gym.Env):
 
         commands = [alpha, beta, tcp_friendliness, fast_convergence]
 
-        # for command in commands:
-        #     (subprocess.Popen(command, shell=True)).communicate()
+        for command in commands:
+            (subprocess.Popen(command, shell=True)).communicate()
 
     def step(self, action):
         observation = get_observation(self.dir, self.net_logs, 5)
@@ -89,7 +88,7 @@ class CMuRLEnv(gym.Env):
         for log in observation:
             # If number of retries is not zero, self.retries is not None,
             # and retires is greater than retries_thresh of self.retires
-            if (log[2] != 0) and (self.retries is not None) and\
+            if (log[2] != 0) and (self.retries is not None) and \
                     (self.retries + self.retries * RETRIES_THRESH < log[2]):
                 state = states[0]
                 reward = calculate_reward(state, self.time_step)
