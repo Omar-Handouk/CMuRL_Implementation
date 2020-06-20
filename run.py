@@ -8,7 +8,7 @@ from stable_baselines import PPO2
 env = make_vec_env('CMuRL_Env:CMuRL-Env-v0')
 env = VecCheckNan(env, raise_exception=True)
 
-model = PPO2.load('CMuRL_Model_v3')
+model = PPO2.load('CMuRL_Model_v5')
 
 obs = env.reset()
 while True:
