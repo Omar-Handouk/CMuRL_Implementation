@@ -11,8 +11,6 @@ states = [0, 1, 2, 3]
 
 # Hyper-parameters
 MEAN_INTERVAL = 5  # Interval for averaging bandwidth
-DELTA_MAX = 0.5  # Maximum bandwidth lost
-DELTA_MIN = 0.5  # Minimum bandwidth gained
 LAMBDA = 0.1  # Base reward
 
 # Base-values
@@ -30,6 +28,9 @@ PERC_ALPHA = 0.5
 PERC_BETA = 0.7
 TCP_FRIENDLINESS = 1.0
 FAST_CONVERGENCE = 1.0
+DELTA_MAX = 0.5  # Maximum bandwidth lost
+DELTA_MIN = 0.5  # Minimum bandwidth gained
+RETRIES_THRESH = 0.25
 
 
 class CMuRLEnv(gym.Env):
@@ -49,6 +50,11 @@ class CMuRLEnv(gym.Env):
         self.perc_beta = PERC_BETA
         self.tcp_friendliness = TCP_FRIENDLINESS
         self.fast_convergence = FAST_CONVERGENCE
+        self.state = None
+        self.retries = None
+        self.retries_thresh = RETRIES_THRESH
+        self.delta_min = DELTA_MIN
+        self.delta_max = DELTA_MAX
 
         # Call TCPTuner initial values
         self.call_tcptuner()
@@ -58,7 +64,7 @@ class CMuRLEnv(gym.Env):
         # Properties Transmitted bytes, Bandwidth, Retries, Congestion Window size (All in KBytes)
         self.observation_space = spaces.Box(low=0, high=999, shape=(5, 4))
         # Actions that map to environment variables
-        self.action_space = spaces.Box(low=np.array([0, 0, 0, 0]), high=np.array([1, 1, 1, 1]))
+        self.action_space = spaces.Box(low=np.array([0, 0, 0, 0, 0, 0, 0]), high=np.array([1, 1, 1, 1, 1, 500, 500]))
 
     def call_tcptuner(self):
         base_command = "echo 'CMurl@dmin213!' | sudo -S /bin/bash " + os.path.join(self.dir, '../scripts/manage_cc.sh ')
@@ -83,9 +89,13 @@ class CMuRLEnv(gym.Env):
         self.time_step += 1
 
         for log in observation:
-            if log[2] != 0:
+            # If number of retries is not zero, self.retries is not None,
+            # and retires is greater than retries_thresh of self.retires
+            if (log[2] != 0) and (self.retries is not None) and\
+                    (self.retries + self.retries * self.retries_thresh >= log[2]):
                 state = states[0]
                 reward = calculate_reward(state, self.time_step)
+            self.retries = log[2]
 
         if not (self.time_step % MEAN_INTERVAL) and state == -1:  # If 5 transmissions passed and no state is set
             # Check if we have no average bandwidth set
@@ -95,9 +105,10 @@ class CMuRLEnv(gym.Env):
             if self.average_bandwidth is None:
                 pass
             else:
-                if self.average_bandwidth <= calculated_avg and DELTA_MIN <= abs_diff:  # If average bandwidth increased
+                # If average bandwidth increased
+                if self.average_bandwidth <= calculated_avg and self.delta_min <= abs_diff:
                     state = states[1]
-                else:
+                elif self.average_bandwidth > calculated_avg and self.delta_max > abs_diff:
                     state = states[2]
 
                 reward = calculate_reward(state, self.time_step)
@@ -108,13 +119,17 @@ class CMuRLEnv(gym.Env):
             state = states[3]
             reward = calculate_reward(state, self.time_step)
 
+        self.state = state
+
         # Update Accumulated rewards, perc_alpha, perc_beta, tcp_friendliness & fast_convergence
         self.accumulated_rewards += reward
         self.perc_alpha = action[0]
         self.perc_beta = action[1]
         self.tcp_friendliness = action[2]
         self.fast_convergence = action[3]
-
+        self.retries_thresh = action[4]
+        self.delta_min = action[5]
+        self.delta_max = action[6]
         # Call TCPTuner with new updated parameters
         self.call_tcptuner()
 
@@ -127,6 +142,10 @@ class CMuRLEnv(gym.Env):
         print('Beta:', str(min(int(round(MAX_BETA * self.perc_beta)), MAX_BETA)))
         print('TCP_Friendliness:', str(int(round(self.tcp_friendliness))))
         print('Fast_Convergence:', str(int(round(self.fast_convergence))))
+        print('State:', str(self.state))
+        print('Retries Threshold:', self.retries_thresh)
+        print('Delta minimum:', self.delta_min)
+        print('Delta maximum:', self.delta_max)
         print('---------------------------------------------------------------')
 
     def reset(self):
@@ -138,6 +157,11 @@ class CMuRLEnv(gym.Env):
         self.perc_beta = PERC_BETA
         self.tcp_friendliness = TCP_FRIENDLINESS
         self.fast_convergence = FAST_CONVERGENCE
+        self.state = None
+        self.retries = None
+        self.retries_thresh = RETRIES_THRESH
+        self.delta_min = DELTA_MIN
+        self.delta_max = DELTA_MAX
 
         # Call TCPTuner initial values
         self.call_tcptuner()
