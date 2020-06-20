@@ -1,15 +1,14 @@
 import __future__
 
 import gym
-from stable_baselines.common.vec_env import DummyVecEnv, VecCheckNan
-from stable_baselines.common.policies import MlpPolicy
-from stable_baselines import PPO1
-from env.CMuRLEnv import CMuRLEnv
+from stable_baselines.common.vec_env import VecCheckNan
+from stable_baselines.common import make_vec_env
+from stable_baselines import PPO2
 
-env = DummyVecEnv([lambda: CMuRLEnv()])
+env = make_vec_env('CMuRL_Env:CMuRL-Env-v0')
 env = VecCheckNan(env, raise_exception=True)
 
-model = PPO1.load('CMuRL_Model_v3')
+model = PPO2.load('CMuRL_Model_v3')
 
 obs = env.reset()
 while True:

@@ -1,9 +1,8 @@
 import __future__
 
 import gym
-from env.CMuRLEnv import CMuRLEnv
 
-env = CMuRLEnv()
+env = gym.make('CMuRL_Env:CMuRL-Env-v0')
 
 action = env.action_space.sample()
 
