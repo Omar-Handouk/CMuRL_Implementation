@@ -63,6 +63,8 @@ class CMuRLEnv(gym.Env):
         self.action_space = spaces.Box(low=np.array([0, 0, 0, 0]), high=np.array([1, 1, 1, 1]), dtype=np.float64)
 
     def call_tcptuner(self):
+        if self.time_step % 1000:
+            return None
         base_command = "echo 'CMurl@dmin213!' | sudo -S /bin/bash " + \
                        str(os.path.join(self.dir, '../../../scripts/manage_cc.sh '))
 
