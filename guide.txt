@@ -1,0 +1,33 @@
+Testing outputs:
+- Two TCPTuner runs
+- Two TCP CUBIC runs
+----------------------
+Testing steps:
+--------------
+* Host:
+1- configure /etc/resolv.conf
+2- Load TCPTuner module & check sysctl
+3- Check if CMuRL repo. is up to date
+4- TTY3: ping -i 3 192.168.2.22
+5- TTY2: run client script
+6- TTY1: Check run.py is running latest version of agent
+7- Check if /sys/module/tcp_tuner/parameters/* are changing every 1000 time_steps
+----------
+* Router:
+1- Check if CMuRL repo. is up to date
+2- Optional: Generate scenarios (./gen_scenarios.py <interface> <#scenarios + 1>)
+3- If in training run: ./scripts/random_gen.py else run: ./scripts/run.sh "MUST BE SUDOED"
+4- Use TTY2 to check for interface changes
+----------
+* Server:
+1- Run iperf3 in server mode and make it verbose
+--------
+Scripts and config guide:
+1- run.py Runs a pre-trained model, (MUST: define needed model, client.sh is run)
+2- main.py: Trains a new model, (MUST: define model a unique model name, OPTIONAL: define time steps)
+3- gen_scenarios.py: Generate random network scenarios in scenarios.txt, (MUST: define interface, number of scenes + 1)
+4- Client.sh: Runs an iperf3 client and outputs logs in iperf_results directory, (MUST: define server ip, OPTIONAL: Define logs name)
+5- fixed_scenario.py: Replaced by run.sh
+6- manage_cc.sh: Controls TCPTuner parameters
+7- random_train.py: Generate random traffic rules for congestion simulation, mainly used for training (OPTIONAL: Define interface, default is enp0s3)
+8- run.sh: Runs a fixed network simulation defined in scenarios.txt
